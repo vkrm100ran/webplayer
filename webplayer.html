@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>360 Video Player</title>
+    <!-- Include A-Frame Library -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <!-- Include hls.js for HLS streaming support -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body style="margin: 0; overflow: hidden;">
+    <!-- A-Frame Scene -->
+    <a-scene>
+        <a-sky id="video-sphere" radius="5000" color="#000"></a-sky>
+    </a-scene>
+
+    <script>
+        // Get the video URL from the query parameter in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoUrl = urlParams.get('video');  // e.g., "https://cdn.okomo.in/converted/Img1719478742329/Img1719478742329.m3u8"
+
+        // Function to play the 360 video on the A-Frame sphere
+        function play360Video(videoUrl) {
+            if (!videoUrl) {
+                alert("No video URL provided.");
+                return;
+            }
+
+            // Create a video element and set up hls.js if the video URL is .m3u8
+            const video = document.createElement('video');
+            video.crossOrigin = 'anonymous';  // Enable cross-origin for HLS
+            video.loop = true;
+            video.setAttribute('webkit-playsinline', 'true');
+            video.setAttribute('playsinline', 'true');
+            video.setAttribute('autoplay', 'true');
+            video.setAttribute('muted', 'true');  // Mute video for auto-play
+
+            // Check if HLS is supported by the browser
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(videoUrl);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play();
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = videoUrl;
+                video.addEventListener('loadedmetadata', () => {
+                    video.play();
+                });
+            } else {
+                alert("HLS is not supported on this browser.");
+            }
+
+            // Attach the video texture to the A-Frame sphere
+            const videoSphere = document.querySelector('#video-sphere');
+            videoSphere.setAttribute('material', { shader: 'flat', src: video });
+        }
+
+        // Call the function to play the video
+        play360Video(videoUrl);
+    </script>
+</body>
+</html>
+
+
+
+
+
